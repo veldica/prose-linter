@@ -7,7 +7,7 @@ function round(value: number, decimals: number = 2): number {
 }
 
 export interface RankedLever {
-  lever: string;
+  id: string;
   label: string;
   rank: number;
   score: number;
@@ -69,15 +69,15 @@ export function rankRevisionLevers(
   addHeuristicLevers(accumulators, stats, formulas);
 
   return Array.from(accumulators.entries())
-    .map(([lever, accumulator]) => {
-      const definition = REVISION_LEVER_CATALOG[lever];
+    .map(([id, accumulator]) => {
+      const definition = REVISION_LEVER_CATALOG[id];
       const score = round(accumulator.score, 2);
       const impactScope = reverseScopeRank(accumulator.scope_rank);
       const priority: RankedLever["priority"] =
         score >= 70 ? "high" : score >= 35 ? "medium" : "low";
 
       return {
-        lever,
+        id,
         label: definition.label,
         rank: 0,
         score,
@@ -94,7 +94,7 @@ export function rankRevisionLevers(
       if (right.score !== left.score) return right.score - left.score;
       if (right.affected_formulas.length !== left.affected_formulas.length) 
         return right.affected_formulas.length - left.affected_formulas.length;
-      return left.lever.localeCompare(right.lever);
+      return left.id.localeCompare(right.id);
     })
     .map((lever, index) => ({
       ...lever,

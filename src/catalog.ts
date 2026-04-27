@@ -314,44 +314,118 @@ export const AI_PATTERNS = AI_MARKERS;
 export const DOCUMENT_SIGNALS: DocumentSignal[] = [
   {
     id: "specificity_deficit",
-    name: "Specificity Deficit",
+    label: "Specificity Deficit",
     category: "specificity_deficit",
     severity: "medium",
     explanation: "Low density of numbers or data points relative to word count. AI often generalizes without providing concrete evidence."
   },
   {
     id: "ai_skeleton",
-    name: "AI Skeleton",
+    label: "AI Skeleton",
     category: "structural_pattern",
     severity: "medium",
     explanation: "Use of predictable article structures (Introduction -> Benefits -> Conclusion) typical of default assistant output."
   },
   {
     id: "paragraph_symmetry",
-    name: "Paragraph Symmetry",
+    label: "Paragraph Symmetry",
     category: "structural_pattern",
     severity: "medium",
     explanation: "Highly uniform paragraph lengths (e.g., all 3-5 sentences) which can feel mechanical."
   },
   {
     id: "repeated_starts",
-    name: "Repeated Sentence Starts",
+    label: "Repeated Sentence Starts",
     category: "repetition_pattern",
     severity: "medium",
     explanation: "Multiple sentences starting with identical transitional phrases like 'This helps' or 'It provides'."
   },
   {
     id: "bold_leadins",
-    name: "Bold Lead-ins",
+    label: "Bold Lead-ins",
     category: "punctuation_pattern",
     severity: "medium",
     explanation: "Excessive use of bolded terms followed by colons at the start of paragraphs or list items."
   },
   {
     id: "triads",
-    name: "Triads",
+    label: "Triads",
     category: "triad_pattern",
     severity: "low",
     explanation: "Frequent use of 'Rule of Three' phrasing (A, B, and C) which is common in persuasive AI writing."
   }
 ];
+
+import type { StyleProfile } from "./types.js";
+
+export const CATALOG_TEMPLATES: Record<string, StyleProfile> = {
+  thriller_fast_paced: {
+    name: "Thriller (Fast Paced)",
+    description: "Optimized for high-action scenes with short sentences and rapid paragraph transitions.",
+    targets: {
+      sentence_metrics: {
+        avg_words_per_sentence: { value: 12, operator: "at_most" },
+        max_words_per_sentence: { value: 25, operator: "at_most" },
+        sentence_length_stddev: { value: 4, operator: "at_least" }
+      },
+      paragraph_metrics: {
+        avg_words_per_paragraph: { value: 50, operator: "at_most" },
+        max_words_per_paragraph: { value: 100, operator: "at_most" }
+      },
+      fiction_metrics: {
+        scene_density_proxy: { value: 0.6, operator: "at_least" },
+        dialogue_ratio: { value: 0.3, operator: "at_least" }
+      }
+    },
+    track_ai_patterns: true
+  },
+  academic_rigorous: {
+    name: "Academic (Rigorous)",
+    description: "Designed for formal research and technical papers requiring precise and complex structure.",
+    targets: {
+      sentence_metrics: {
+        avg_words_per_sentence: { value: 25, operator: "at_least" },
+        sentence_length_stddev: { value: 8, operator: "at_least" }
+      },
+      lexical_metrics: {
+        complex_word_ratio: { value: 0.2, operator: "at_least" },
+        abstract_word_ratio: { value: 0.05, operator: "at_most" }
+      },
+      formulas: {
+        flesch_kincaid_grade_level: { value: 12, operator: "at_least" }
+      }
+    },
+    track_ai_patterns: true
+  },
+  technical_docs: {
+    name: "Technical Documentation",
+    description: "Focuses on clarity, scannability, and direct instructional prose.",
+    targets: {
+      sentence_metrics: {
+        avg_words_per_sentence: { value: 18, operator: "at_most" }
+      },
+      scannability_metrics: {
+        heading_density: { value: 1.5, operator: "at_least" },
+        list_density: { value: 1.0, operator: "at_least" },
+        paragraph_scannability_score: { value: 80, operator: "at_least" }
+      }
+    },
+    track_ai_patterns: true
+  },
+  business_direct: {
+    name: "Business (Direct)",
+    description: "Clear, professional communication optimized for quick reading and decision making.",
+    targets: {
+      sentence_metrics: {
+        avg_words_per_sentence: { value: 15, operator: "at_most" }
+      },
+      paragraph_metrics: {
+        avg_words_per_paragraph: { value: 60, operator: "at_most" }
+      },
+      scannability_metrics: {
+        paragraph_scannability_score: { value: 75, operator: "at_least" }
+      }
+    },
+    track_ai_patterns: true
+  }
+};

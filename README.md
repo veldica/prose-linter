@@ -55,9 +55,39 @@ console.log(analysis.style_band); // "low" | "moderate" | "high" | "very_high"
 console.log(analysis.matches);    // Array of matches with line/column locations
 ```
 
+### Using Pre-defined Templates
+
+The library includes a collection of high-quality templates for common writing styles.
+
+```typescript
+import { lintText, CATALOG_TEMPLATES } from '@veldica/prose-linter';
+
+const result = lintText(text, CATALOG_TEMPLATES.thriller_fast_paced);
+```
+
+Available templates:
+- `thriller_fast_paced`: Optimized for action with short, punchy sentences.
+- `academic_rigorous`: High complexity, formal vocabulary, and rigorous structure.
+- `technical_docs`: Clear, instructional, and highly scannable.
+- `business_direct`: Professional and concise for quick decision making.
+
+## Style Profile Configuration
+
+A `StyleProfile` allows you to set specific targets across several metric groups:
+
+| Group | Key Metrics |
+|-------|-------------|
+| `counts` | `word_count`, `sentence_count`, `paragraph_count` |
+| `sentence_metrics` | `avg_words_per_sentence`, `sentence_length_stddev`, `max_words_per_sentence`, `sentence_length_p95` |
+| `paragraph_metrics` | `avg_words_per_paragraph`, `max_words_per_paragraph`, `percent_paragraphs_over_100_words` |
+| `lexical_metrics` | `complex_word_ratio`, `unique_word_count`, `repetition_ratio` |
+| `scannability_metrics` | `heading_density`, `list_density`, `paragraph_scannability_score` |
+| `fiction_metrics` | `dialogue_ratio`, `scene_density_proxy`, `sensory_term_density` |
+| `formulas` | `flesch_kincaid_grade_level`, `gunning_fog`, `consensus_grade` |
+
 ## Result Structure
 
-The `LintResult` object returned by `lintText` includes:
+The `FullLintResult` object returned by `lintText` includes:
 
 - `summary`: High-level compliance numbers (score, counts).
 - `checks`: All checks performed (passed, failed, and skipped).
@@ -65,6 +95,11 @@ The `LintResult` object returned by `lintText` includes:
 - `skipped_checks`: Checks that couldn't be run due to missing data.
 - `ai_analysis`: Detailed report on AI-style markers.
 - `revision_levers`: Ranked suggestions for improvement.
+  - `id`: Unique identifier for the lever (e.g., "shorten_long_sentences").
+  - `label`: Human-readable name.
+  - `score`: Priority score (0-100).
+  - `explanation`: Detailed advice.
+  - `evidence`: Specific violations triggering this lever.
 
 ## License
 

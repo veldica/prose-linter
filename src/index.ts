@@ -222,7 +222,7 @@ export function inventoryMarkers(
         if (word_count >= 50 && !looksLikeLiterature && total_ai_markers > 0 && numberCount < (word_count / 250)) {
             const sig = DOCUMENT_SIGNALS.find(s => s.id === "specificity_deficit")!;
             ai_matches.push({
-                pattern: sig.name,
+                pattern: sig.label,
                 matched_text: "Low density of numbers/data",
                 category: sig.category,
                 severity: sig.severity,
@@ -247,7 +247,7 @@ export function inventoryMarkers(
             if (skeletonMatches >= 3) {
                 const sig = DOCUMENT_SIGNALS.find(s => s.id === "ai_skeleton")!;
                 ai_matches.push({
-                    pattern: sig.name,
+                    pattern: sig.label,
                     matched_text: "Common AI article skeleton",
                     category: sig.category,
                     severity: sig.severity,
@@ -273,7 +273,7 @@ export function inventoryMarkers(
             if (totalParagraphs >= 3 && (paragraphsWith3to5Sentences / totalParagraphs) > 0.8) {
                 const sig = DOCUMENT_SIGNALS.find(s => s.id === "paragraph_symmetry")!;
                 ai_matches.push({
-                    pattern: sig.name,
+                    pattern: sig.label,
                     matched_text: "High paragraph symmetry (3-5 sentences each)",
                     category: sig.category,
                     severity: sig.severity,
@@ -301,7 +301,7 @@ export function inventoryMarkers(
                 if (count >= 2) {
                     const sig = DOCUMENT_SIGNALS.find(s => s.id === "repeated_starts")!;
                     ai_matches.push({
-                        pattern: `${sig.name}: "${start}"`,
+                        pattern: `${sig.label}: "${start}"`,
                         matched_text: start,
                         category: sig.category,
                         severity: sig.severity,
@@ -321,7 +321,7 @@ export function inventoryMarkers(
         if (boldLeadInMatches && boldLeadInMatches.length >= 3) {
             const sig = DOCUMENT_SIGNALS.find(s => s.id === "bold_leadins")!;
             ai_matches.push({
-                pattern: sig.name,
+                pattern: sig.label,
                 matched_text: "Repetitive bold lead-in pattern",
                 category: sig.category,
                 severity: sig.severity,
@@ -339,7 +339,7 @@ export function inventoryMarkers(
         if (triadMatches && triadMatches.length >= 2) {
             const sig = DOCUMENT_SIGNALS.find(s => s.id === "triads")!;
             ai_matches.push({
-                pattern: sig.name,
+                pattern: sig.label,
                 matched_text: "Frequent use of triads (Rule of Three)",
                 category: sig.category,
                 severity: sig.severity,

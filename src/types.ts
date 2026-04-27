@@ -88,7 +88,7 @@ export interface AIAnalysis {
 
 export interface DocumentSignal {
   id: string;
-  name: string;
+  label: string;
   category: string;
   severity: Severity;
   explanation: string;

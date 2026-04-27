@@ -57,7 +57,7 @@ describe("Prose Linter", () => {
     const result = lintText(text, profile);
     assert.ok(result.revision_levers.length >= 2);
     // shorten_long_sentences should be top due to high normalized gap and impact
-    assert.strictEqual(result.revision_levers[0].lever, "shorten_long_sentences");
+    assert.strictEqual(result.revision_levers[0].id, "shorten_long_sentences");
   });
 
   it("tracks specific words and detects violations with locations", () => {

@@ -1,6 +1,6 @@
 {
   "name": "@veldica/prose-linter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Structural unit test suite for English text. Enforces style contracts and identifies structural weaknesses using deterministic metrics.",
   "type": "module",
   "main": "./dist/index.js",
