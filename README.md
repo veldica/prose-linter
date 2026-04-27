@@ -33,7 +33,8 @@ const profile = {
       sentence_length_stddev: { value: 5, operator: 'at_least' }
     }
   },
-  track_ai_patterns: true
+  track_ai_patterns: true,
+  track_words: ["revolutionary", "leverage"] // Track specific words
 };
 
 const result = lintText("Your prose goes here...", profile);
@@ -74,6 +75,7 @@ const report = compareIntegrity(original, revised, {
 console.log(report.integrity_score); // 0-100 score
 console.log(report.anchor_recall);    // Ratio of anchors preserved
 console.log(report.anchors);          // List of added, dropped, and shifted anchors
+console.log(report.polarity_shift_count); // Number of anchors whose negation changed
 ```
 
 Available options:
@@ -109,6 +111,7 @@ A `StyleProfile` allows you to set specific targets across several metric groups
 | `scannability_metrics` | `heading_density`, `list_density`, `paragraph_scannability_score` |
 | `fiction_metrics` | `dialogue_ratio`, `scene_density_proxy`, `sensory_term_density` |
 | `formulas` | `flesch_kincaid_grade_level`, `gunning_fog`, `consensus_grade` |
+| `word_tracking_metrics` | Counts for words defined in `track_words` |
 
 ## Result Structure
 
