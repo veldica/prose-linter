@@ -14,6 +14,7 @@ function safeDivide(numerator: number, denominator: number): number {
 }
 
 function round(value: number, decimals: number = 2): number {
+  if (isNaN(value)) return 0;
   const multiplier = Math.pow(10, decimals);
   return Math.round(value * multiplier) / multiplier;
 }
@@ -69,6 +70,7 @@ export function calculateFit(
     weight: number,
     name: string
   ) => {
+    if (isNaN(current)) return;
     totalWeight += weight;
     const pass = target.operator === "at_least" ? current >= target.value : current <= target.value;
     if (pass) {

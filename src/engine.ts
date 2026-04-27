@@ -14,6 +14,7 @@ function safeDivide(numerator: number, denominator: number): number {
 }
 
 function round(value: number, decimals: number = 2): number {
+  if (isNaN(value)) return 0;
   const multiplier = Math.pow(10, decimals);
   return Math.round(value * multiplier) / multiplier;
 }
@@ -37,7 +38,7 @@ export function checkViolations(
     for (const [metric, target] of Object.entries(targetGroup)) {
       const current = currentValues[metric];
       
-      if (current === undefined || current === null) {
+      if (current === undefined || current === null || (typeof current === "number" && isNaN(current))) {
         allChecks.push({
           ruleId: `${group.replace("_metrics", "")}-${metric.replace(/_/g, "-")}`,
           metric,
@@ -47,8 +48,8 @@ export function checkViolations(
           pass: false,
           status: "skipped",
           severity: "low",
-          message: `${metric} could not be evaluated (data missing).`,
-          explanation: `The metric ${metric} is not present in the current analysis context.`,
+          message: `${metric} could not be evaluated (data missing or invalid).`,
+          explanation: `The metric ${metric} is not present or returned NaN in the current analysis context.`,
           revision_levers: [],
           normalized_gap: 0,
           affected_formulas: [],

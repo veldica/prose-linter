@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `technical_docs`
   - `business_direct`
 - **Documentation**: Added comprehensive list of target keys and template usage examples to README.
+- **Robustness**: Improved handling of `NaN` metric results (common in very short texts) in fit scoring and violation detection.
 
 ### Changed
 - **API Consistency**: Standardized property naming across result objects.
