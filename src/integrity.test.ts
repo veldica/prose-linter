@@ -36,11 +36,11 @@ describe("Content Integrity Comparison", () => {
   });
 
   it("detects polarity shifts", () => {
-    const original = "Encryption is required.";
-    const revised = "Encryption is not required.";
+    const original = "System Encryption is required.";
+    const revised = "System Encryption is not required.";
     
     const report = compareIntegrity(original, revised);
-    const match = report.anchors.find(a => a.text === "Encryption");
+    const match = report.anchors.find(a => a.text === "System Encryption");
     assert.strictEqual(match?.status, "polarity_shift");
     assert.strictEqual(report.polarity_shift_count, 1);
     assert.ok(report.integrity_score < 90);

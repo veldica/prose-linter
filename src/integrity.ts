@@ -17,10 +17,28 @@ const NEGATION_MARKERS = [
   "must not", "prohibited", "neither", "nor"
 ];
 
+const SENTENCE_START_STOPLIST = new Set([
+  "The", "A", "An", "This", "That", "These", "Those",
+  "We", "I", "You", "He", "She", "They", "It",
+  "Visit", "Use", "Click", "Run", "From", "In", "On", "At", "By"
+]);
+
 function createAnchor(fullText: string, anchorText: string, offset: number, category: any, sub: string, weight: number): ContentAnchor {
   const start = Math.max(0, offset - 60);
   const end = Math.min(fullText.length, offset + anchorText.length + 60);
-  const contextWindow = fullText.slice(start, end).toLowerCase();
+  
+  const textBefore = fullText.slice(start, offset);
+  const textAfter = fullText.slice(offset + anchorText.length, end);
+  
+  // Deterministic Negation Check: Only look at 8 tokens before/after, stopping at punctuation
+  const windowBefore = textBefore.split(/[\s,]+/).slice(-8).join(" ").toLowerCase();
+  const windowAfter = textAfter.split(/[\s,]+/).slice(0, 8).join(" ").toLowerCase();
+  
+  // Stop window at sentence boundaries
+  const cleanWindowBefore = windowBefore.split(/[.?!;:]/).pop() || "";
+  const cleanWindowAfter = windowAfter.split(/[.?!;:]/).shift() || "";
+
+  const contextWindow = cleanWindowBefore + " " + cleanWindowAfter;
   
   let is_negated = false;
   for (const m of NEGATION_MARKERS) {
@@ -37,8 +55,8 @@ function createAnchor(fullText: string, anchorText: string, offset: number, cate
     category,
     sub_category: sub,
     weight,
-    context_before: fullText.slice(start, offset),
-    context_after: fullText.slice(offset + anchorText.length, end),
+    context_before: textBefore,
+    context_after: textAfter,
     is_negated,
     offset
   };
@@ -47,6 +65,7 @@ function createAnchor(fullText: string, anchorText: string, offset: number, cate
 export function extractAnchors(text: string, options: IntegrityOptions = {}): ContentAnchor[] {
   const anchors: ContentAnchor[] = [];
   
+  // 1. Explicit Alias Phrases
   if (options.aliases) {
     const allPhrases = [...Object.keys(options.aliases), ...Object.values(options.aliases).flat()];
     const multiWordPhrases = allPhrases.filter(p => p.includes(" ")).sort((a, b) => b.length - a.length);
@@ -61,6 +80,7 @@ export function extractAnchors(text: string, options: IntegrityOptions = {}): Co
     }
   }
 
+  // 2. Run Regex Patterns
   for (const pattern of ANCHOR_PATTERNS) {
     let match: RegExpExecArray | null;
     pattern.regex.lastIndex = 0;
@@ -71,13 +91,23 @@ export function extractAnchors(text: string, options: IntegrityOptions = {}): Co
     }
   }
 
+  // 3. Extract Proper Nouns
   const properNounRegex = /\b[A-Z][a-zA-Z0-9]*(?:\s+[A-Z0-9][a-zA-Z0-9]*)*\b/g;
   let match: RegExpExecArray | null;
   properNounRegex.lastIndex = 0;
   while ((match = properNounRegex.exec(text)) !== null) {
     const m = match;
     if (anchors.some(a => a.offset <= m.index && (a.offset + a.text.length) >= (m.index + m[0].length))) continue;
-    anchors.push(createAnchor(text, match[0], match.index, options.track_fiction ? "fiction" : "lexical", "proper_noun", 0.8));
+    
+    const term = m[0];
+    const isAtSentenceStart = m.index === 0 || /[.?!]\s+$/.test(text.slice(Math.max(0, m.index - 3), m.index));
+    
+    if (isAtSentenceStart && !options.track_fiction) {
+        if (SENTENCE_START_STOPLIST.has(term)) continue;
+        if (!term.includes(" ")) continue; // Skip single-word sentence starts like "The" if not in fiction mode
+    }
+
+    anchors.push(createAnchor(text, term, m.index, options.track_fiction ? "fiction" : "lexical", "proper_noun", 0.8));
   }
 
   return anchors;

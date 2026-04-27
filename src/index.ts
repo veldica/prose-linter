@@ -1,5 +1,5 @@
 import { tokenizeProse } from "@veldica/prose-tokenizer";
-import { runAllFormulas } from "@veldica/readability";
+import { runAllFormulas, countSyllables, isPolysyllabic, round, safeDivide } from "@veldica/readability";
 import { analyzeLexical, analyzeNarrative } from "@veldica/prose-analyzer";
 import { checkViolations, summarizeCompliance } from "./engine.js";
 import { calculateFit, type FitResult } from "./fit.js";
@@ -234,6 +234,7 @@ export function inventoryMarkers(
                 column: null
             });
             total_ai_markers++;
+            unique_patterns.add(sig.id);
             ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
         }
 
@@ -259,6 +260,7 @@ export function inventoryMarkers(
                     column: null
                 });
                 total_ai_markers++;
+                unique_patterns.add(sig.id);
                 ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
             }
 
@@ -285,6 +287,7 @@ export function inventoryMarkers(
                     column: null
                 });
                 total_ai_markers++;
+                unique_patterns.add(sig.id);
                 ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
             }
 
@@ -313,6 +316,7 @@ export function inventoryMarkers(
                         column: null
                     });
                     total_ai_markers++;
+                    unique_patterns.add(sig.id);
                     ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
                 }
             }
@@ -333,6 +337,7 @@ export function inventoryMarkers(
                 column: null
             });
             total_ai_markers++;
+            unique_patterns.add(sig.id);
             ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
         }
 
@@ -351,6 +356,7 @@ export function inventoryMarkers(
                 column: null
             });
             total_ai_markers++;
+            unique_patterns.add(sig.id);
             ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
         }
     }
@@ -448,6 +454,18 @@ export function lintText(text: string, profile: StyleProfile): FullLintResult {
   const lexical = analyzeLexical(wordsRaw);
   const fiction = analyzeNarrative(sentencesRaw, wordsRaw, sentenceWordCounts, paragraphWordCounts);
 
+  // Advanced Lexical Metrics
+  const totalWordChars = wordsRaw.reduce((sum, w) => sum + w.length, 0);
+  let totalSyllables = 0;
+  let complexWordCount = 0;
+  for (const word of wordsRaw) {
+    const sCount = countSyllables(word);
+    totalSyllables += sCount;
+    if (isPolysyllabic(word)) {
+      complexWordCount++;
+    }
+  }
+
   // AI Analysis (using improved inventoryMarkers)
   const ai_analysis = (profile.track_ai_patterns || (profile.track_words && profile.track_words.length > 0)) 
     ? inventoryMarkers(text, { 
@@ -462,6 +480,8 @@ export function lintText(text: string, profile: StyleProfile): FullLintResult {
     counts: {
       ...tokenized.counts,
       unique_word_count: lexical.unique_word_count,
+      syllable_count: totalSyllables,
+      complex_word_count: complexWordCount,
     },
     sentence_metrics: {
         avg_words_per_sentence: sentencesRaw.length > 0 ? sentenceWordCounts.reduce((a, b) => a + b, 0) / sentencesRaw.length : 0,
@@ -498,7 +518,9 @@ export function lintText(text: string, profile: StyleProfile): FullLintResult {
     },
     lexical: {
         ...lexical,
-        avg_characters_per_word: word_count_actual > 0 ? (text.length / word_count_actual) : 0, // Simplified but better than missing
+        avg_characters_per_word: word_count_actual > 0 ? totalWordChars / word_count_actual : 0,
+        avg_syllables_per_word: word_count_actual > 0 ? totalSyllables / word_count_actual : 0,
+        complex_word_ratio: word_count_actual > 0 ? complexWordCount / word_count_actual : 0,
     },
     scannability: {
         heading_density: tokenized.counts.heading_count / (word_count_actual / 100 || 1),
