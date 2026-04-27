@@ -8,6 +8,7 @@ function round(value: number, decimals: number = 2): number {
 
 export interface RankedLever {
   id: string;
+  lever: string;
   label: string;
   rank: number;
   score: number;
@@ -78,6 +79,7 @@ export function rankRevisionLevers(
 
       return {
         id,
+        lever: id,
         label: definition.label,
         rank: 0,
         score,

@@ -55,6 +55,31 @@ console.log(analysis.style_band); // "low" | "moderate" | "high" | "very_high"
 console.log(analysis.matches);    // Array of matches with line/column locations
 ```
 
+### Content Integrity Comparison
+
+Check if a rewrite preserved critical factual anchors (names, dates, URLs, version numbers) from the original text.
+
+```typescript
+import { compareIntegrity } from '@veldica/prose-linter';
+
+const original = "The system supports AES-256 encryption. Visit https://example.com for more.";
+const revised = "The system uses encryption. Go to our site.";
+
+const report = compareIntegrity(original, revised, {
+  aliases: {
+    "AES-256": ["encryption"]
+  }
+});
+
+console.log(report.integrity_score); // 0-100 score
+console.log(report.anchor_recall);    // Ratio of anchors preserved
+console.log(report.anchors);          // List of added, dropped, and shifted anchors
+```
+
+Available options:
+- `aliases`: Map of canonical terms to their allowed variations.
+- `track_fiction`: Enable fiction mode (treats more words as proper nouns).
+
 ### Using Pre-defined Templates
 
 The library includes a collection of high-quality templates for common writing styles.

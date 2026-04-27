@@ -57,7 +57,7 @@ describe("Prose Linter", () => {
     const result = lintText(text, profile);
     assert.ok(result.revision_levers.length >= 2);
     // shorten_long_sentences should be top due to high normalized gap and impact
-    assert.strictEqual(result.revision_levers[0].id, "shorten_long_sentences");
+    assert.strictEqual(result.revision_levers[0].lever, "shorten_long_sentences");
   });
 
   it("tracks specific words and detects violations with locations", () => {
@@ -122,4 +122,21 @@ describe("Prose Linter", () => {
       assert.ok(result.stats.sentence_metrics.sentence_length_p90 > 0);
       assert.ok(result.stats.sentence_metrics.sentence_length_stddev > 0);
   });
+});
+
+import { CATALOG_TEMPLATES } from "./catalog.js";
+
+describe("Built-in Templates", () => {
+  const sampleText = "This is a substantial piece of prose designed to test the built-in templates of the Veldica Prose Linter. It contains several sentences of varying length, some technical identifiers like v1.2.3, and a few complex words like 'multidimensional' and 'idempotency' to ensure all metrics are triggered correctly. We also include some dialogue: 'Hello there,' he said. The goal is to have zero skipped checks when running against any of our standard catalog templates.";
+
+  for (const [name, profile] of Object.entries(CATALOG_TEMPLATES)) {
+    it(`${name} template has zero skipped checks`, () => {
+      const result = lintText(sampleText, profile);
+      // We expect 0 skipped checks for professional-grade built-in templates
+      if (result.skipped_checks.length > 0) {
+        const skippedNames = result.skipped_checks.map(c => c.metric).join(", ");
+        assert.fail(`Template ${name} has ${result.skipped_checks.length} skipped checks: ${skippedNames}`);
+      }
+    });
+  }
 });

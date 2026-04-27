@@ -8,19 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2026-04-27
 
 ### Added
-- **Style Templates**: Introduced `CATALOG_TEMPLATES` in `@veldica/prose-linter/catalog` with pre-defined styles:
+- **Content Integrity**: Added `compareIntegrity()` for deterministic semantic-anchor preservation tracking.
+- **Style Templates**: Introduced `CATALOG_TEMPLATES` with pre-defined styles:
   - `thriller_fast_paced`
   - `academic_rigorous`
   - `technical_docs`
   - `business_direct`
-- **Documentation**: Added comprehensive list of target keys and template usage examples to README.
-- **Robustness**: Improved handling of `NaN` metric results (common in very short texts) in fit scoring and violation detection.
+- **Documentation**: Added content integrity documentation and comprehensive target key list to README.
+- **Robustness**: Improved handling of `NaN` metric results, added bounds to regex wildcards, and hardened `checkViolations` against malicious payloads.
 
 ### Changed
 - **API Consistency**: Standardized property naming across result objects.
-  - Renamed `lever` to `id` in `RankedLever` objects.
+  - Renamed `id` to `lever` in `RankedLever` objects to align with editorial standards.
   - Renamed `name` to `label` in `DocumentSignal` objects.
-- **Improved AI Auditing**: Updated `inventoryMarkers` to support improved signal labeling and better integration with structural document signals.
+- **Improved AI Auditing**: `inventoryMarkers` now returns pre-aggregated `word_tracking_metrics`.
+- **Accurate Metrics**: Fixed `avg_characters_per_word` to correctly exclude non-word characters.
 
 ## [1.0.0] - 2026-04-20
 

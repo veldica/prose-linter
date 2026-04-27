@@ -389,6 +389,10 @@ export const CATALOG_TEMPLATES: Record<string, StyleProfile> = {
       },
       lexical_metrics: {
         complex_word_ratio: { value: 0.2, operator: "at_least" },
+        lexical_density: { value: 0.45, operator: "at_least" },
+        lexical_diversity_mattr: { value: 0.7, operator: "at_least" }
+      },
+      fiction_metrics: {
         abstract_word_ratio: { value: 0.05, operator: "at_most" }
       },
       formulas: {

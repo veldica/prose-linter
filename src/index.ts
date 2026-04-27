@@ -1,5 +1,5 @@
 import { tokenizeProse } from "@veldica/prose-tokenizer";
-import { runAllFormulas } from "@veldica/readability";
+import { runAllFormulas, countSyllables, isPolysyllabic, round, safeDivide } from "@veldica/readability";
 import { analyzeLexical, analyzeNarrative } from "@veldica/prose-analyzer";
 import { checkViolations, summarizeCompliance } from "./engine.js";
 import { calculateFit, type FitResult } from "./fit.js";
@@ -12,6 +12,7 @@ export * from "./engine.js";
 export * from "./fit.js";
 export * from "./ranking.js";
 export * from "./catalog.js";
+export * from "./integrity.js";
 
 export interface FullLintResult {
   stats: {
@@ -233,6 +234,7 @@ export function inventoryMarkers(
                 column: null
             });
             total_ai_markers++;
+            unique_patterns.add(sig.id);
             ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
         }
 
@@ -258,6 +260,7 @@ export function inventoryMarkers(
                     column: null
                 });
                 total_ai_markers++;
+                unique_patterns.add(sig.id);
                 ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
             }
 
@@ -284,6 +287,7 @@ export function inventoryMarkers(
                     column: null
                 });
                 total_ai_markers++;
+                unique_patterns.add(sig.id);
                 ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
             }
 
@@ -312,6 +316,7 @@ export function inventoryMarkers(
                         column: null
                     });
                     total_ai_markers++;
+                    unique_patterns.add(sig.id);
                     ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
                 }
             }
@@ -332,6 +337,7 @@ export function inventoryMarkers(
                 column: null
             });
             total_ai_markers++;
+            unique_patterns.add(sig.id);
             ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
         }
 
@@ -350,6 +356,7 @@ export function inventoryMarkers(
                 column: null
             });
             total_ai_markers++;
+            unique_patterns.add(sig.id);
             ai_categories[sig.category] = (ai_categories[sig.category] || 0) + 1;
         }
     }
@@ -393,6 +400,17 @@ export function inventoryMarkers(
     else if (density > 20) style_band = "high";
     else if (density > 7) style_band = "moderate";
 
+    const word_tracking_metrics: Record<string, number> = {};
+    if (options.track_words) {
+        for (const pattern of options.track_words) {
+            word_tracking_metrics[pattern] = 0;
+        }
+    }
+
+    for (const match of ai_matches) {
+        word_tracking_metrics[match.pattern] = (word_tracking_metrics[match.pattern] || 0) + 1;
+    }
+
     return {
         marker_count: total_ai_markers,
         unique_marker_types: unique_patterns.size,
@@ -400,7 +418,8 @@ export function inventoryMarkers(
         score: ai_score,
         style_band,
         categories: ai_categories,
-        matches: ai_matches
+        matches: ai_matches,
+        word_tracking_metrics
     };
 }
 
@@ -435,6 +454,18 @@ export function lintText(text: string, profile: StyleProfile): FullLintResult {
   const lexical = analyzeLexical(wordsRaw);
   const fiction = analyzeNarrative(sentencesRaw, wordsRaw, sentenceWordCounts, paragraphWordCounts);
 
+  // Advanced Lexical Metrics
+  const totalWordChars = wordsRaw.reduce((sum, w) => sum + w.length, 0);
+  let totalSyllables = 0;
+  let complexWordCount = 0;
+  for (const word of wordsRaw) {
+    const sCount = countSyllables(word);
+    totalSyllables += sCount;
+    if (isPolysyllabic(word)) {
+      complexWordCount++;
+    }
+  }
+
   // AI Analysis (using improved inventoryMarkers)
   const ai_analysis = (profile.track_ai_patterns || (profile.track_words && profile.track_words.length > 0)) 
     ? inventoryMarkers(text, { 
@@ -449,6 +480,8 @@ export function lintText(text: string, profile: StyleProfile): FullLintResult {
     counts: {
       ...tokenized.counts,
       unique_word_count: lexical.unique_word_count,
+      syllable_count: totalSyllables,
+      complex_word_count: complexWordCount,
     },
     sentence_metrics: {
         avg_words_per_sentence: sentencesRaw.length > 0 ? sentenceWordCounts.reduce((a, b) => a + b, 0) / sentencesRaw.length : 0,
@@ -485,7 +518,9 @@ export function lintText(text: string, profile: StyleProfile): FullLintResult {
     },
     lexical: {
         ...lexical,
-        avg_characters_per_word: word_count_actual > 0 ? (text.length / word_count_actual) : 0, // Simplified but better than missing
+        avg_characters_per_word: word_count_actual > 0 ? totalWordChars / word_count_actual : 0,
+        avg_syllables_per_word: word_count_actual > 0 ? totalSyllables / word_count_actual : 0,
+        complex_word_ratio: word_count_actual > 0 ? complexWordCount / word_count_actual : 0,
     },
     scannability: {
         heading_density: tokenized.counts.heading_count / (word_count_actual / 100 || 1),
@@ -496,23 +531,10 @@ export function lintText(text: string, profile: StyleProfile): FullLintResult {
         sentence_tail_risk_score: sentencesRaw.length > 0 ? (sentenceWordCounts.filter(c => c > 30).length / sentencesRaw.length * 100) : 0,
     },
     fiction,
-    word_tracking: {} as Record<string, number>, 
+    word_tracking: ai_analysis?.word_tracking_metrics || {}, 
     sentences: [], 
     paragraphs: []
   };
-
-  // Populate word tracking for stats
-  if (profile.track_words) {
-      for (const pattern of profile.track_words) {
-          stats.word_tracking[pattern] = 0;
-      }
-  }
-
-  if (ai_analysis) {
-      for (const match of ai_analysis.matches) {
-          stats.word_tracking[match.pattern] = (stats.word_tracking[match.pattern] || 0) + 1;
-      }
-  }
 
 
   // 3. Complexity Analysis
