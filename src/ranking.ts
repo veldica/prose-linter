@@ -7,6 +7,7 @@ function round(value: number, decimals: number = 2): number {
 }
 
 export interface RankedLever {
+  id: string;
   lever: string;
   label: string;
   rank: number;
@@ -77,6 +78,7 @@ export function rankRevisionLevers(
         score >= 70 ? "high" : score >= 35 ? "medium" : "low";
 
       return {
+        id,
         lever: id,
         label: definition.label,
         rank: 0,
@@ -94,7 +96,7 @@ export function rankRevisionLevers(
       if (right.score !== left.score) return right.score - left.score;
       if (right.affected_formulas.length !== left.affected_formulas.length) 
         return right.affected_formulas.length - left.affected_formulas.length;
-      return left.lever.localeCompare(right.lever);
+      return left.id.localeCompare(right.id);
     })
     .map((lever, index) => ({
       ...lever,

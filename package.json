@@ -26,6 +26,10 @@
       "types": "./dist/catalog.d.ts",
       "import": "./dist/catalog.js"
     },
+    "./integrity": {
+      "types": "./dist/integrity.d.ts",
+      "import": "./dist/integrity.js"
+    },
     "./types": {
       "types": "./dist/types.d.ts",
       "import": "./dist/types.js"
