@@ -9,12 +9,12 @@ import type {
 import { METRIC_LEVERS, METRIC_FORMULAS } from "./catalog.js";
 
 function safeDivide(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
+  if (denominator === 0 || !Number.isFinite(numerator) || !Number.isFinite(denominator)) return 0;
   return numerator / denominator;
 }
 
 function round(value: number, decimals: number = 2): number {
-  if (isNaN(value)) return 0;
+  if (!Number.isFinite(value)) return 0;
   const multiplier = Math.pow(10, decimals);
   return Math.round(value * multiplier) / multiplier;
 }
@@ -26,6 +26,8 @@ export function checkViolations(
 ): CheckResult[] {
   const allChecks: CheckResult[] = [];
   const targets = profile.targets || {};
+  let totalProcessedTargets = 0;
+  const MAX_TARGETS = 100; // Strict cap to prevent Payload Poisoning / DoS
 
   const checkGroup = (
     group: keyof StyleProfile["targets"],
@@ -36,20 +38,26 @@ export function checkViolations(
     if (!targetGroup) return;
 
     for (const [metric, target] of Object.entries(targetGroup)) {
+      if (totalProcessedTargets >= MAX_TARGETS) break;
+      totalProcessedTargets++;
+
       const current = currentValues[metric];
       
-      if (current === undefined || current === null || (typeof current === "number" && isNaN(current))) {
+      // Sanitize target value to ensure it's a finite number
+      const targetVal = Number.isFinite(target?.value) ? target.value : 0;
+      
+      if (current === undefined || current === null || (typeof current === "number" && !Number.isFinite(current))) {
         allChecks.push({
           ruleId: `${group.replace("_metrics", "")}-${metric.replace(/_/g, "-")}`,
           metric,
           metric_group: group,
           current_value: 0,
-          target_value: round(target.value),
+          target_value: round(targetVal),
           pass: false,
           status: "skipped",
           severity: "low",
           message: `${metric} could not be evaluated (data missing or invalid).`,
-          explanation: `The metric ${metric} is not present or returned NaN in the current analysis context.`,
+          explanation: `The metric ${metric} is not present or returned non-finite in the current analysis context.`,
           revision_levers: [],
           normalized_gap: 0,
           affected_formulas: [],
@@ -60,11 +68,11 @@ export function checkViolations(
       }
 
       const pass =
-        target.operator === "at_least" ? current >= target.value : current <= target.value;
+        target.operator === "at_least" ? current >= targetVal : current <= targetVal;
       
       if (!pass) {
-        const gap = Math.abs(current - target.value);
-        const normalizedGap = safeDivide(gap, target.value || 1);
+        const gap = Math.abs(current - targetVal);
+        const normalizedGap = safeDivide(gap, targetVal || 1);
 
         let severity: Severity = "low";
         if (normalizedGap > 0.4) severity = "high";
@@ -75,12 +83,12 @@ export function checkViolations(
           metric,
           metric_group: group,
           current_value: round(current),
-          target_value: round(target.value),
+          target_value: round(targetVal),
           pass: false,
           status: "failed",
           severity,
-          message: `${metric} is ${target.operator === "at_least" ? "below" : "above"} the target of ${target.value}.`,
-          explanation: `Violation of ${metric} constraint in ${group}. Current: ${current}, Target: ${target.value}`,
+          message: `${metric} is ${target.operator === "at_least" ? "below" : "above"} the target of ${targetVal}.`,
+          explanation: `Violation of ${metric} constraint in ${group}. Current: ${current}, Target: ${targetVal}`,
           revision_levers: leversForMetric(metric, target.operator, group),
           normalized_gap: round(normalizedGap),
           affected_formulas: METRIC_FORMULAS[metric] ?? [],
@@ -98,7 +106,7 @@ export function checkViolations(
           metric,
           metric_group: group,
           current_value: round(current),
-          target_value: round(target.value),
+          target_value: round(targetVal),
           pass: true,
           status: "passed",
           severity: "low",

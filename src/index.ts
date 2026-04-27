@@ -171,7 +171,8 @@ export function inventoryMarkers(
             let processedPattern = marker.pattern.replace(/\*/g, wildcardPlaceholder);
             
             let regexStr = processedPattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            regexStr = regexStr.replace(new RegExp(wildcardPlaceholder, "g"), ".*?");
+            // Bound wildcards to max 15 words and consume surrounding spaces
+            regexStr = regexStr.replace(new RegExp(`\\s*${wildcardPlaceholder}\\s*`, "g"), "(?:\\W+\\w+){0,15}?\\W+");
             
             const startBoundary = /^\w/.test(marker.pattern) ? "(?<!\\w)" : "";
             const endBoundary = /\w$/.test(marker.pattern) ? "(?!\\w)" : "";
