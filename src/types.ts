@@ -84,6 +84,7 @@ export interface AIAnalysis {
   style_band: "low" | "moderate" | "high" | "very_high";
   categories: Record<string, number>;
   matches: AIMarkerMatch[];
+  word_tracking_metrics: Record<string, number>;
 }
 
 export interface DocumentSignal {
@@ -98,4 +99,40 @@ export interface AIMarker {
   pattern: string;
   category: string;
   severity: Severity;
+}
+
+export interface ContentAnchor {
+  text: string;
+  category: "numeric" | "temporal" | "technical" | "lexical" | "fiction" | "other";
+  sub_category?: string;
+  weight: number;
+  context_before: string;
+  context_after: string;
+  is_negated: boolean;
+  offset: number;
+}
+
+export interface AnchorComparison {
+  text: string;
+  category: string;
+  original_count: number;
+  revised_count: number;
+  status: "preserved" | "dropped" | "added" | "changed" | "polarity_shift";
+  weight: number;
+  original_contexts: string[];
+  revised_contexts: string[];
+}
+
+export interface ContentIntegrityReport {
+  integrity_score: number;
+  anchor_recall: number;
+  weighted_anchor_recall: number;
+  new_anchor_rate: number;
+  polarity_shift_count: number;
+  anchors: AnchorComparison[];
+}
+
+export interface IntegrityOptions {
+  aliases?: Record<string, string[]>;
+  track_fiction?: boolean;
 }
