@@ -1,0 +1,94 @@
+{
+  "name": "@veldica/prose-linter",
+  "version": "1.0.0",
+  "description": "Structural unit test suite for English text. Enforces style contracts and identifies structural weaknesses using deterministic metrics.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./engine": {
+      "types": "./dist/engine.d.ts",
+      "import": "./dist/engine.js"
+    },
+    "./fit": {
+      "types": "./dist/fit.d.ts",
+      "import": "./dist/fit.js"
+    },
+    "./ranking": {
+      "types": "./dist/ranking.d.ts",
+      "import": "./dist/ranking.js"
+    },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "import": "./dist/catalog.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test src/index.test.ts src/word-tracking.test.ts",
+    "benchmark": "tsx src/benchmark.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "prose-linter",
+    "writing-lint",
+    "text-validation",
+    "editorial-tooling",
+    "deterministic",
+    "style-contract",
+    "nlp",
+    "readability",
+    "prose-analysis",
+    "style-guide",
+    "ai-writing"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Veldica",
+    "email": "opensource@veldica.com",
+    "url": "https://veldica.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/veldica/prose-linter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/veldica/prose-linter/issues"
+  },
+  "homepage": "https://veldica.com/prose-linter",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src/**/*.ts",
+    "!src/**/*.test.ts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "dependencies": {
+    "@veldica/prose-analyzer": "^1.0.0",
+    "@veldica/prose-tokenizer": "^1.1.1",
+    "@veldica/readability": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "tsx": "^4.21.0",
+    "typescript": "^5.0.0"
+  }
+}
