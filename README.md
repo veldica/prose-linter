@@ -132,3 +132,7 @@ The `FullLintResult` object returned by `lintText` includes:
 ## License
 
 MIT
+
+---
+
+Built by [Veldica](https://veldica.com) — see the [prose-linter product page](https://veldica.com/prose-linter).
